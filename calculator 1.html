@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scientific Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --btn: #3498db;
+      --btn-hover: #2980b9;
+      --display: #f0f0f0;
+      --accent: #27ae60;
+    }
+
+    body.dark {
+      --bg: #121212;
+      --text: #f5f5f5;
+      --btn: #444;
+      --btn-hover: #666;
+      --display: #1e1e1e;
+      --accent: #2ecc71;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .calculator {
+      width: 430px;
+      padding: 20px;
+      background: var(--bg);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      border-radius: 16px;
+      transition: all 0.3s;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .top-bar button {
+      padding: 6px 12px;
+      font-size: 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .display {
+      background: var(--display);
+      padding: 15px;
+      font-size: 28px;
+      text-align: right;
+      margin: 15px 0;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 10px;
+      background: var(--btn);
+      color: white;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    button:hover {
+      background: var(--btn-hover);
+    }
+
+    .history {
+      margin-top: 15px;
+      max-height: 120px;
+      overflow-y: auto;
+      font-size: 14px;
+      background: var(--display);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .toggle-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .toggle-group label {
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="top-bar">
+      <h2>Scientific Calc</h2>
+      <button onclick="toggleTheme()">🌗 Theme</button>
+    </div>
+
+    <div class="toggle-group">
+      <label><input type="checkbox" id="degToggle" checked onchange="setAngleMode()"> Degrees</label>
+      <button onclick="clearDisplay()">C</button>
+      <button onclick="deleteLast()">⌫</button>
+    </div>
+
+    <div class="display" id="display">0</div>
+
+    <div class="buttons">
+      <button onclick="append('sin(')">sin</button>
+      <button onclick="append('cos(')">cos</button>
+      <button onclick="append('tan(')">tan</button>
+      <button onclick="append('log(')">log</button>
+      <button onclick="append('ln(')">ln</button>
+
+      <button onclick="append('7')">7</button>
+      <button onclick="append('8')">8</button>
+      <button onclick="append('9')">9</button>
+      <button onclick="append('(')">(</button>
+      <button onclick="append(')')">)</button>
+
+      <button onclick="append('4')">4</button>
+      <button onclick="append('5')">5</button>
+      <button onclick="append('6')">6</button>
+      <button onclick="append('*')">×</button>
+      <button onclick="append('/')">÷</button>
+
+      <button onclick="append('1')">1</button>
+      <button onclick="append('2')">2</button>
+      <button onclick="append('3')">3</button>
+      <button onclick="append('+')">+</button>
+      <button onclick="append('-')">−</button>
+
+      <button onclick="append('0')">0</button>
+      <button onclick="append('.')">.</button>
+      <button onclick="append('**')">^</button>
+      <button onclick="append('Math.PI')">π</button>
+      <button onclick="append('Math.E')">e</button>
+
+      <button onclick="append('sqrt(')">√</button>
+      <button onclick="append('factorial(')">n!</button>
+      <button onclick="calculate()">=</button>
+    </div>
+
+    <div class="history" id="history"><strong>History:</strong><br></div>
+  </div>
+
+  <script>
+    const display = document.getElementById("display");
+    const history = document.getElementById("history");
+    let angleInDegrees = true;
+
+    function append(val) {
+      if (display.textContent === "0" || display.textContent === "Error") {
+        display.textContent = "";
+      }
+      display.textContent += val;
+    }
+
+    function clearDisplay() {
+      display.textContent = "0";
+    }
+
+    function deleteLast() {
+      display.textContent = display.textContent.slice(0, -1) || "0";
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+    }
+
+    function setAngleMode() {
+      angleInDegrees = document.getElementById("degToggle").checked;
+    }
+
+    function factorial(n) {
+      if (n === 0 || n === 1) return 1;
+      if (n < 0) return NaN;
+      let res = 1;
+      for (let i = 2; i <= n; i++) res *= i;
+      return res;
+    }
+
+    function preprocess(expr) {
+      return expr
+        .replace(/sin\(/g, angleInDegrees ? "Math.sin(toRadians(" : "Math.sin(")
+        .replace(/cos\(/g, angleInDegrees ? "Math.cos(toRadians(" : "Math.cos(")
+        .replace(/tan\(/g, angleInDegrees ? "Math.tan(toRadians(" : "Math.tan(")
+        .replace(/log\(/g, "Math.log10(")
+        .replace(/ln\(/g, "Math.log(")
+        .replace(/sqrt\(/g, "Math.sqrt(")
+        .replace(/factorial\(([^()]+)\)/g, "factorial($1)");
+    }
+
+    function calculate() {
+      try {
+        let expr = preprocess(display.textContent);
+        let result = eval(expr);
+        history.innerHTML += display.textContent + " = " + result + "<br>";
+        display.textContent = result;
+      } catch (e) {
+        display.textContent = "Error";
+      }
+    }
+
+    function toRadians(deg) {
+      return deg * (Math.PI / 180);
+    }
+
+    // Keyboard Support
+    document.addEventListener("keydown", (e) => {
+      if (!isNaN(e.key) || "+-*/().".includes(e.key)) {
+        append(e.key);
+      } else if (e.key === "Enter") {
+        calculate();
+      } else if (e.key === "Backspace") {
+        deleteLast();
+      } else if (e.key === "Escape") {
+        clearDisplay();
+      }
+    });
+  </script>
+</body>
+</html>
